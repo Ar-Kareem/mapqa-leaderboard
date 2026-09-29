@@ -1,0 +1,493 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MapQA — Dataset Documentation</title>
+<style>
+:root{
+  --bg:#fbfaf8; --panel:#ffffff; --ink:#1e1c19; --ink-soft:#59544d; --ink-faint:#8c857b;
+  --rule:#e5e0d8; --rule-soft:#efebe4;
+  --accent:#8a4b1f; --accent-soft:#f4ece3; --accent-line:#d9c3ac;
+  --code-bg:#f4f1ec; --code-ink:#4a3f33;
+  --warn-bg:#fdf4ec; --warn-line:#e0a86a;
+  --note-bg:#eef3f2; --note-line:#7fa8a0;
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Helvetica,Arial,sans-serif;
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#16151a; --panel:#1d1c22; --ink:#eae7e1; --ink-soft:#aaa49b; --ink-faint:#7d766d;
+    --rule:#302e37; --rule-soft:#26242c;
+    --accent:#e0a06a; --accent-soft:#2a2229; --accent-line:#59452f;
+    --code-bg:#212028; --code-ink:#d6cec2;
+    --warn-bg:#2a2118; --warn-line:#a9743a;
+    --note-bg:#1a2422; --note-line:#4e7a72;
+  }
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font:16px/1.65 var(--sans); -webkit-font-smoothing:antialiased;
+}
+.wrap{display:grid; grid-template-columns:250px minmax(0,1fr); gap:56px;
+  max-width:1220px; margin:0 auto; padding:0 32px 120px;}
+@media (max-width:940px){ .wrap{grid-template-columns:1fr; gap:0; padding:0 20px 80px} nav.toc{position:static!important; height:auto!important; border-right:0!important; padding:24px 0 0!important; margin-bottom:8px} }
+
+/* ---- masthead ---- */
+header.mast{grid-column:1/-1; padding:64px 0 40px; border-bottom:1px solid var(--rule);}
+header.mast .kicker{font:600 11px/1 var(--mono); letter-spacing:.16em; text-transform:uppercase;
+  color:var(--accent); margin-bottom:16px}
+header.mast h1{font:700 58px/1 var(--serif); margin:0 0 18px; letter-spacing:-.02em}
+header.mast p.lede{font:400 19px/1.6 var(--serif); color:var(--ink-soft); max-width:62ch; margin:0 0 14px}
+header.mast p.sub{font-size:15px; color:var(--ink-soft); max-width:70ch; margin:0}
+
+/* ---- toc ---- */
+nav.toc{position:sticky; top:0; align-self:start; height:100vh; overflow-y:auto;
+  padding:40px 20px 40px 0; border-right:1px solid var(--rule-soft);}
+nav.toc h2{font:600 10px/1 var(--mono); letter-spacing:.16em; text-transform:uppercase;
+  color:var(--ink-faint); margin:0 0 14px}
+nav.toc a{display:block; padding:5px 0; font-size:13.5px; color:var(--ink-soft);
+  text-decoration:none; border-left:2px solid transparent; padding-left:12px; margin-left:-12px}
+nav.toc a:hover{color:var(--accent); border-left-color:var(--accent-line)}
+nav.toc a.sub{padding-left:26px; font-size:12.5px; color:var(--ink-faint)}
+nav.toc .gap{height:14px}
+
+/* ---- content ---- */
+main{padding-top:40px; min-width:0}
+section{scroll-margin-top:24px; margin-bottom:64px}
+h2.sec{font:700 30px/1.2 var(--serif); margin:0 0 6px; letter-spacing:-.01em}
+h2.sec + p.dek{color:var(--ink-soft); margin:0 0 26px; max-width:70ch}
+h3{font:600 17px/1.35 var(--sans); margin:38px 0 10px; letter-spacing:-.005em}
+h4{font:600 14px/1.4 var(--sans); margin:26px 0 8px; color:var(--ink-soft)}
+p{max-width:74ch}
+a{color:var(--accent)}
+code{font:13px/1.5 var(--mono); background:var(--code-bg); color:var(--code-ink);
+  padding:1.5px 5px; border-radius:4px}
+pre{background:var(--code-bg); border:1px solid var(--rule); border-radius:10px;
+  padding:16px 18px; overflow-x:auto; margin:16px 0}
+pre code{background:none; padding:0; font-size:12.5px; line-height:1.65; color:var(--code-ink)}
+hr{border:0; border-top:1px solid var(--rule); margin:48px 0}
+
+/* ---- stat tiles ---- */
+.stats{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:1px;
+  background:var(--rule); border:1px solid var(--rule); border-radius:12px; overflow:hidden; margin:24px 0 8px}
+.stat{background:var(--panel); padding:18px 18px 16px}
+.stat .n{font:700 30px/1 var(--serif); letter-spacing:-.02em; display:block; margin-bottom:6px}
+.stat .l{font:500 11px/1.35 var(--mono); letter-spacing:.06em; text-transform:uppercase; color:var(--ink-faint)}
+
+/* ---- tables ---- */
+.tw{overflow-x:auto; margin:20px 0; border:1px solid var(--rule); border-radius:10px; background:var(--panel)}
+table{border-collapse:collapse; width:100%; font-size:14px}
+th{text-align:left; font:600 11px/1.3 var(--mono); letter-spacing:.07em; text-transform:uppercase;
+  color:var(--ink-faint); padding:12px 16px; border-bottom:1px solid var(--rule); white-space:nowrap;
+  background:var(--panel); position:sticky; top:0}
+td{padding:11px 16px; border-bottom:1px solid var(--rule-soft); vertical-align:top}
+tr:last-child td{border-bottom:0}
+td.num,th.num{text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap}
+td.idx{color:var(--ink-faint); font:12px/1.6 var(--mono); text-align:right; width:1%}
+td code{white-space:nowrap}
+td strong{font-weight:650}
+.bar{display:block; height:3px; border-radius:2px; background:var(--accent-line); margin-top:6px}
+
+/* ---- callouts ---- */
+.call{border-left:3px solid var(--accent-line); background:var(--accent-soft);
+  border-radius:0 10px 10px 0; padding:16px 20px; margin:22px 0}
+.call.warn{border-left-color:var(--warn-line); background:var(--warn-bg)}
+.call.note{border-left-color:var(--note-line); background:var(--note-bg)}
+.call p{margin:0 0 10px} .call p:last-child{margin:0}
+.call .tag{font:600 10px/1 var(--mono); letter-spacing:.14em; text-transform:uppercase;
+  color:var(--ink-faint); display:block; margin-bottom:9px}
+.call pre{margin:12px 0 0; background:var(--panel)}
+
+/* ---- misc ---- */
+ol.principles{padding-left:22px; max-width:74ch} ol.principles li{margin:9px 0}
+ul.plain{padding-left:20px; max-width:74ch} ul.plain li{margin:10px 0}
+blockquote.ex{margin:16px 0; padding:14px 18px; border-left:3px solid var(--rule);
+  background:var(--panel); border-radius:0 8px 8px 0; font-size:14.5px}
+blockquote.ex em{color:var(--ink-soft)} blockquote.ex .arrow{color:var(--accent); font:12px var(--mono)}
+footer{grid-column:1/-1; border-top:1px solid var(--rule); padding-top:24px; margin-top:24px;
+  font-size:13px; color:var(--ink-faint)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="mast">
+  <div class="kicker">Dataset Documentation</div>
+  <h1>MapQA</h1>
+  <p class="lede">A visual question-answering dataset over maps and charts: 11,176 question/answer pairs grounded in 525 map images, each labeled with the reasoning skills the question requires and the visual failure modes it is likely to trigger in a multimodal model.</p>
+  <p class="sub">The maps are mostly real documents — FAA sectional and terminal area charts, nautical charts, topographic sheets, city zoning and cadastral maps, insurance maps, soil surveys, military strategic and tactical maps — plus six fantasy maps. Most images come from the Library of Congress; the rest from the National Park Service, university digital collections, municipal government sites, and Internet Archive captures of FAA and NOAA chart PDFs. <strong>Images are not included</strong> — every record carries the source URL for its image.</p>
+  <p class="sub" style="margin-top:12px">25% of the maps in the full corpus have been held back as a private evaluation set and are not part of this release. The split was made by map, so no map in this release appears in the held-back portion.</p>
+</header>
+
+<nav class="toc">
+  <h2>Contents</h2>
+  <a href="#files">Files</a>
+  <a href="#glance">At a glance</a>
+  <a href="#schema">Record schema</a>
+  <a href="#schema" class="sub">Parsing note</a>
+  <a href="#examples" class="sub">Examples</a>
+  <div class="gap"></div>
+  <a href="#skills">Question skills (17)</a>
+  <a href="#skills" class="sub">Multi-part flag</a>
+  <a href="#modes">Visual failure modes (9)</a>
+  <a href="#categories">Map categories</a>
+  <div class="gap"></div>
+  <a href="#images">Getting the images</a>
+  <a href="#truncated" class="sub">Truncated FAA PDFs</a>
+  <a href="#hawaii" class="sub">Hawaiian Islands images</a>
+  <div class="gap"></div>
+  <a href="#using">Using the dataset</a>
+  <a href="#splits" class="sub">Split by map</a>
+  <a href="#eval" class="sub">Evaluating</a>
+  <a href="#qle" class="sub">Quasi Logical Expression</a>
+</nav>
+
+<main>
+
+<section id="files">
+  <h2 class="sec">Files</h2>
+  <div class="tw"><table>
+    <thead><tr><th>File</th><th>What it is</th></tr></thead>
+    <tbody>
+      <tr><td><code>open_release.jsonl</code></td><td>The dataset. One JSON object per line, 11,176 lines.</td></tr>
+      <tr><td><code>question_skills_17.txt</code></td><td>The question-skill taxonomy: 17 labels with descriptions and examples, plus the Multi-Part / Chained structural flag.</td></tr>
+      <tr><td><code>failure_modes_9.txt</code></td><td>The MLLM visual-failure-mode taxonomy (9 labels) and its source.</td></tr>
+      <tr><td><code>README_public.md</code> / <code>README_public.html</code></td><td>This document.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="glance">
+  <h2 class="sec">At a glance</h2>
+  <div class="stats">
+    <div class="stat"><span class="n">11,176</span><span class="l">Q/A pairs</span></div>
+    <div class="stat"><span class="n">525</span><span class="l">Map images</span></div>
+    <div class="stat"><span class="n">4</span><span class="l">Topics</span></div>
+    <div class="stat"><span class="n">23</span><span class="l">Map categories</span></div>
+    <div class="stat"><span class="n">17</span><span class="l">Skill labels</span></div>
+    <div class="stat"><span class="n">9</span><span class="l">Failure modes</span></div>
+    <div class="stat"><span class="n">550</span><span class="l">Two-image questions</span></div>
+    <div class="stat"><span class="n">1,097</span><span class="l">Multi-part questions</span></div>
+  </div>
+  <p style="font-size:13.5px;color:var(--ink-faint)">525 distinct image files — 503 <code>.jpg</code>, 22 <code>.png</code> — forming 525 map sets (495 single images, 30 chart + legend pairs). Eight of the nine failure-mode labels occur in the data. A <em>map set</em> is a distinct value of the <code>Map</code> field — the image or image pair a question is asked about. Image files and map sets both number 525, but they are not the same 525: of the image files, 465 appear only in single-image questions, 30 only inside a chart+legend pair, and 30 in both roles.</p>
+
+  <h3>Questions per topic</h3>
+  <div class="tw"><table>
+    <thead><tr><th>Topic</th><th class="num">Questions</th><th class="num">Maps</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Aviation</strong><span class="bar" style="width:100%"></span></td><td class="num">4,187</td><td class="num">165</td></tr>
+      <tr><td><strong>Natural World</strong><span class="bar" style="width:67%"></span></td><td class="num">2,805</td><td class="num">143</td></tr>
+      <tr><td><strong>Urban</strong><span class="bar" style="width:57%"></span></td><td class="num">2,412</td><td class="num">118</td></tr>
+      <tr><td><strong>Military</strong><span class="bar" style="width:42%"></span></td><td class="num">1,772</td><td class="num">99</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="schema">
+  <h2 class="sec">Record schema</h2>
+  <p class="dek">Every line has all 15 fields, always present and always of the same type.</p>
+  <div class="tw"><table>
+    <thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>uid</code></td><td>string</td><td>UUID. Unique per record.</td></tr>
+      <tr><td><code>Question</code></td><td>string</td><td>The question text.</td></tr>
+      <tr><td><code>Label</code></td><td>string</td><td>The gold answer. Usually a short phrase. Multi-part answers are not consistently delimited — see <a href="#eval">Evaluating</a>.</td></tr>
+      <tr><td><code>Question Skill</code></td><td>string</td><td>One or more skill labels from the 17-label taxonomy, joined with <code>"; "</code>.</td></tr>
+      <tr><td><code>Quasi Logical Expression</code></td><td>string</td><td>A semi-formal restatement of the question as quantified clauses — <code>for some x, x is "…", return …</code>. Makes the retrieval and reasoning steps explicit.</td></tr>
+      <tr><td><code>Expression Complexity</code></td><td>string</td><td>An integer, stored as a string, scoring the structural complexity of the quasi-logical expression. Observed range: 3–10.</td></tr>
+      <tr><td><code>Map URL</code></td><td>string</td><td>Source URL for the image. For <code>multi_map</code> records, two URLs joined with <code>", "</code>, in the same order as <code>Map</code>.</td></tr>
+      <tr><td><code>Map</code></td><td>string</td><td>Image filename. For <code>multi_map</code> records, two filenames joined with <code>", "</code>.</td></tr>
+      <tr><td><code>Map Category</code></td><td>string</td><td>Document type, e.g. <code>sectional chart</code>, <code>soil map</code>, <code>zoning map</code>. One of 23 values.</td></tr>
+      <tr><td><code>Map Description</code></td><td>string</td><td>A short prose description of what the map shows. Constant for a given map.</td></tr>
+      <tr><td><code>Map Location</code></td><td>string</td><td>The place the map covers, e.g. <code>Newton County Georgia</code>, <code>Des Moines, Iowa</code>.</td></tr>
+      <tr><td><code>Topic</code></td><td>string</td><td>One of <code>Aviation</code>, <code>Natural World</code>, <code>Urban</code>, <code>Military</code>.</td></tr>
+      <tr><td><code>potential_failure_modes</code></td><td>string</td><td>One or more visual failure-mode labels from the 9-label taxonomy, joined with <code>"; "</code>.</td></tr>
+      <tr><td><code>multi_map</code></td><td>bool</td><td><code>true</code> if the question requires both images (typically a chart plus its legend).</td></tr>
+      <tr><td><code>Multi-Part / Chained</code></td><td>bool</td><td><code>true</code> if the question contains two or more linked asks. A structural flag, independent of the skill labels.</td></tr>
+    </tbody>
+  </table></div>
+
+  <p><code>Map</code>, <code>Map Category</code>, <code>Map Description</code>, <code>Map Location</code>, and <code>Topic</code> are properties of the map, not the question — they repeat identically across every question about that map. <code>Map URL</code> is per-record: for a small number of Library of Congress maps the URL carries a <code>r=x,y,w,h,rot</code> region parameter (written <code>?r=…</code> or <code>&amp;r=…</code>) that deep-links the part of the sheet the question is about, so the same image file can appear with several URLs that differ only in that parameter.</p>
+
+  <div class="call warn">
+    <span class="tag">Parsing note</span>
+    <p>Both <code>Map</code> and <code>Map URL</code> use <code>", "</code> (comma <strong>and space</strong>) as their list separator, and the separator only appears when <code>multi_map</code> is <code>true</code>. Do not split on a bare <code>,</code> — LoC region parameters contain commas.</p>
+    <pre><code>def split_maps(field: str) -> list[str]:
+    return field.split(", ") if ", " in field else [field]</code></pre>
+  </div>
+</section>
+
+<section id="examples">
+  <h3>Example — single map</h3>
+  <pre><code>{
+  "uid": "184f3c62-a8e3-4157-aef1-ccbda01e7648",
+  "Question": "Which soil type number is most common around Porterdale, and what
+               slope category does it represent in the legend?",
+  "Label": "7; deep, well-drained soils that have a loamy surface layer
+            and a clayey subsoil",
+  "Question Skill": "Attribute / Value Lookup; Legend &amp; Symbology Interpretation;
+            Spatial Relation; Extremum / Comparison Selection",
+  "Quasi Logical Expression": "For all x and some y, x is soil type numbers around
+            Porterdale in descending order of frequency, y is the slope category that
+            x[0] represents in the legend, return x[0] and y.",
+  "Expression Complexity": "4",
+  "Map URL": "https://www.loc.gov/item/82693767/",
+  "Map": "NewtonCountySoil.jpg",
+  "Map Category": "soil map",
+  "Map Description": "The image is a general soil map of Newton County, Georgia, …",
+  "Map Location": "Newton County Georgia",
+  "Topic": "Natural World",
+  "potential_failure_modes": "Positional and Relational Context;
+            Structural and Physical Characteristics; Text",
+  "multi_map": false,
+  "Multi-Part / Chained": true
+}</code></pre>
+
+  <h3>Example — two maps (chart + legend)</h3>
+  <pre><code>{
+  "uid": "a18bba0b-a7d5-429b-b71f-59baea6c196c",
+  "Question": "What is the height of the obstruction listed just outside of
+               Guthrie Center on this map?",
+  "Label": "1,641 feet",
+  "Question Skill": "Attribute / Value Lookup; Spatial Relation",
+  "Quasi Logical Expression": "for some x and some y, x is the symbol at Legend[obstruction],
+            y is the number marking the area just outside of Guthrie Center[x], return y.",
+  "Expression Complexity": "4",
+  "Map URL": "https://tile.loc.gov/…/ca001124r/full/full/0/default.jpg,
+              https://tile.loc.gov/…/ca001124v/full/full/0/default.jpg",
+  "Map": "DesMoines1970Sec.jpg, DesMoines1970Legend.jpg",
+  "Map Category": "sectional chart",
+  "Map Location": "Des Moines, Iowa",
+  "Topic": "Aviation",
+  "potential_failure_modes": "Positional and Relational Context; Text",
+  "multi_map": true,
+  "Multi-Part / Chained": false
+}</code></pre>
+  <p>Here the legend is the <em>back</em> of the same printed sheet (<code>…1124r</code> recto, <code>…1124v</code> verso). The question cannot be answered from the chart alone — the solver has to look up the obstruction symbol in the legend image first.</p>
+</section>
+
+<hr>
+
+<section id="skills">
+  <h2 class="sec">Question skills</h2>
+  <p class="dek">These describe the skills a human or model must use to answer a question. A question may have multiple labels. Labels are not mutually exclusive and are assigned whenever the corresponding operation is materially required to solve the question.</p>
+  <div class="tw"><table>
+    <thead><tr><th class="num">#</th><th>Label</th><th>Description</th><th class="num">Count</th></tr></thead>
+    <tbody>
+      <tr><td class="idx">6</td><td><strong>Spatial Relation</strong></td><td>Determine the spatial relationship between entities: cardinal direction, relative position, adjacency, containment, betweenness, bordering.</td><td class="num">5,965</td></tr>
+      <tr><td class="idx">1</td><td><strong>Feature Identification</strong></td><td>Identify or name a mapped entity or feature. <em>What city is shown?</em></td><td class="num">5,333</td></tr>
+      <tr><td class="idx">3</td><td><strong>Attribute / Value Lookup</strong></td><td>Retrieve a property, classification, designation, or value associated with a specified feature or location. Numeric and categorical attributes both count.</td><td class="num">4,828</td></tr>
+      <tr><td class="idx">7</td><td><strong>Map-Frame Position</strong></td><td>Use position relative to the map sheet itself — corner, edge, margin, center, quadrant, top, bottom.</td><td class="num">1,528</td></tr>
+      <tr><td class="idx">10</td><td><strong>Extremum / Comparison Selection</strong></td><td>Compare candidates and select an extreme — highest, lowest, largest, smallest, most, least.</td><td class="num">1,332</td></tr>
+      <tr><td class="idx">5</td><td><strong>Legend &amp; Symbology Interpretation</strong></td><td>Interpret how symbols, colors, line styles, fills, or patterns map to meanings or categories.</td><td class="num">1,176</td></tr>
+      <tr><td class="idx">9</td><td><strong>Nearest / Farthest Selection</strong></td><td>Search candidate features and select the spatially closest or farthest from a reference.</td><td class="num">1,121</td></tr>
+      <tr><td class="idx">2</td><td><strong>Text / Label Reading</strong></td><td>Read or transcribe printed map text, labels, annotations, stamps, or other literal wording.</td><td class="num">1,037</td></tr>
+      <tr><td class="idx">8</td><td><strong>Bearing / Direction Reasoning</strong></td><td>Use, compute, or reason with a bearing, radial, azimuth, or compass direction.</td><td class="num">1,026</td></tr>
+      <tr><td class="idx">11</td><td><strong>Route / Connectivity Tracing</strong></td><td>Follow a road, trail, waterway, airway, or network to determine connections, crossings, sequence, or destination.</td><td class="num">762</td></tr>
+      <tr><td class="idx">4</td><td><strong>Map Metadata Lookup</strong></td><td>Retrieve information about the map <em>as a document</em> — scale, projection, datum, title, date, publisher, sheet number, contour interval.</td><td class="num">463</td></tr>
+      <tr><td class="idx">13</td><td><strong>Counting / Enumeration</strong></td><td>Count instances of a feature class or enumerate all members of a defined set.</td><td class="num">441</td></tr>
+      <tr><td class="idx">12</td><td><strong>Grid / Coordinate Referencing</strong></td><td>Use grids, graticules, coordinates, lat/long, UTM, or similar reference systems.</td><td class="num">349</td></tr>
+      <tr><td class="idx">14</td><td><strong>Measurement / Quantitative Reasoning</strong></td><td>Measure or calculate distance, length, area, proportion, percentage, density, average, or ratio.</td><td class="num">239</td></tr>
+      <tr><td class="idx">15</td><td><strong>Presence / Absence / Anomaly Detection</strong></td><td>Determine whether something is present, absent, missing, possible, or unusual.</td><td class="num">156</td></tr>
+      <tr><td class="idx">16</td><td><strong>Description / Characterization</strong></td><td>Characterize or describe a place, feature, region, or condition rather than retrieve one explicit value.</td><td class="num">94</td></tr>
+      <tr><td class="idx">17</td><td><strong>Interpretation / Inference</strong></td><td>Draw a conclusion from map evidence that is not stated as a direct lookup.</td><td class="num">72</td></tr>
+    </tbody>
+  </table></div>
+  <p style="font-size:13.5px;color:var(--ink-faint)">Counts are the number of questions carrying each label; they sum to more than 11,176 because the labels are multi-assigned. The <code>#</code> column is the label's number in <code>question_skills_17.txt</code>; rows here are ordered by frequency.</p>
+
+  <h3>Secondary structural flag</h3>
+  <p><strong>Multi-Part / Chained</strong> — the question contains two or more linked asks or sequential operations. Independent of the skill labels; a multi-part question receives every substantive skill needed to answer it.</p>
+  <blockquote class="ex">
+    <em>Which VOR station is closest to Kapaau, and what is its frequency?</em><br>
+    <span class="arrow">→</span> Nearest / Farthest Selection; Feature Identification; Attribute / Value Lookup
+  </blockquote>
+</section>
+
+
+<hr>
+
+<section id="modes">
+  <h2 class="sec">Visual failure modes</h2>
+  <p class="dek">These labels describe the kind of visual detail a model must resolve in order to answer correctly. They are <strong>failure modes rather than skills</strong>: each names a category of visual information that CLIP-based multimodal LLMs systematically fail to encode, and so tend to get wrong.</p>
+  <p style="font-size:13.5px;color:var(--ink-soft)">Source: Tong, Liu, Zhai, Ma, LeCun, Xie. <em>“Eyes Wide Shut? Exploring the Visual Shortcomings of Multimodal LLMs.”</em> <a href="https://arxiv.org/abs/2401.06209">arXiv:2401.06209</a> — the MMVP benchmark.</p>
+  <div class="tw"><table>
+    <thead><tr><th class="num">#</th><th>Label</th><th>What must be resolved</th><th class="num">Count</th></tr></thead>
+    <tbody>
+      <tr><td class="idx">8</td><td><strong>Text</strong></td><td>Read, transcribe, or resolve text, letters, numbers, logos, or symbols rendered inside the image.</td><td class="num">10,618</td></tr>
+      <tr><td class="idx">5</td><td><strong>Positional and Relational Context</strong></td><td>Spatial position and relationships — on/under, in front/behind, inside/outside, adjacency, contact vs. separation, relative arrangement.</td><td class="num">8,889</td></tr>
+      <tr><td class="idx">4</td><td><strong>Quantity and Count</strong></td><td>The number of objects, parts, or repeated features; exact counts and coarse numeric comparisons.</td><td class="num">296</td></tr>
+      <tr><td class="idx">1</td><td><strong>Orientation and Direction</strong></td><td>Which way something faces, points, turns, or moves — left/right handedness, facing direction, heading of motion.</td><td class="num">1,346</td></tr>
+      <tr><td class="idx">6</td><td><strong>Color and Appearance</strong></td><td>Color, shade, tone, pattern, or surface appearance of a specified object or region.</td><td class="num">520</td></tr>
+      <tr><td class="idx">7</td><td><strong>Structural and Physical Characteristics</strong></td><td>Physical attributes and structural form — shape, material, texture, thickness, proportion, how parts are joined.</td><td class="num">439</td></tr>
+      <tr><td class="idx">2</td><td><strong>Presence of Specific Features</strong></td><td>Whether a particular element, part, or detail exists in the image at all. Failure is hallucinating an absent feature or missing a present one.</td><td class="num">183</td></tr>
+      <tr><td class="idx">3</td><td><strong>State and Condition</strong></td><td>The transient state or configuration of an object rather than its identity — open/closed, on/off, wet/dry, full/empty, moving/at rest.</td><td class="num">104</td></tr>
+      <tr><td class="idx">9</td><td><strong>Viewpoint and Perspective</strong></td><td>The vantage point of the image — camera angle, elevation, viewing side.</td><td class="num">0</td></tr>
+    </tbody>
+  </table></div>
+  <p><strong>Text</strong> and <strong>Positional and Relational Context</strong> dominate, which is what you would expect of maps: nearly every question requires reading something printed on the sheet, and most require locating it relative to something else. <strong>Viewpoint and Perspective</strong> is part of the taxonomy but does not occur in this dataset — maps are all plan-view documents.</p>
+</section>
+
+<hr>
+
+<section id="categories">
+  <h2 class="sec">Map categories</h2>
+  <div class="tw"><table>
+    <thead><tr><th>Category</th><th class="num">Questions</th><th class="num">Maps</th></tr></thead>
+    <tbody>
+      <tr><td>sectional chart</td><td class="num">3,252</td><td class="num">122</td></tr>
+      <tr><td>strategic</td><td class="num">1,308</td><td class="num">65</td></tr>
+      <tr><td>nautical chart</td><td class="num">1,002</td><td class="num">39</td></tr>
+      <tr><td>topographic</td><td class="num">968</td><td class="num">52</td></tr>
+      <tr><td>transportation</td><td class="num">834</td><td class="num">42</td></tr>
+      <tr><td>city map</td><td class="num">630</td><td class="num">23</td></tr>
+      <tr><td>soil map</td><td class="num">549</td><td class="num">23</td></tr>
+      <tr><td>terminal area chart</td><td class="num">483</td><td class="num">26</td></tr>
+      <tr><td>tactical</td><td class="num">464</td><td class="num">34</td></tr>
+      <tr><td>helicopter</td><td class="num">420</td><td class="num">14</td></tr>
+      <tr><td>zoning map</td><td class="num">204</td><td class="num">7</td></tr>
+      <tr><td>cadastral</td><td class="num">201</td><td class="num">9</td></tr>
+      <tr><td>insurance map</td><td class="num">191</td><td class="num">11</td></tr>
+      <tr><td>linguistic map</td><td class="num">126</td><td class="num">5</td></tr>
+      <tr><td>postal roads</td><td class="num">100</td><td class="num">8</td></tr>
+      <tr><td>administrative</td><td class="num">77</td><td class="num">8</td></tr>
+      <tr><td>survey map</td><td class="num">74</td><td class="num">9</td></tr>
+      <tr><td>hydrologic map</td><td class="num">61</td><td class="num">6</td></tr>
+      <tr><td>distribution map</td><td class="num">60</td><td class="num">6</td></tr>
+      <tr><td>park map</td><td class="num">57</td><td class="num">6</td></tr>
+      <tr><td>fantasy map</td><td class="num">53</td><td class="num">6</td></tr>
+      <tr><td>aviation charts</td><td class="num">32</td><td class="num">3</td></tr>
+      <tr><td>historic</td><td class="num">30</td><td class="num">1</td></tr>
+    </tbody>
+  </table></div>
+  <div class="call note">
+    <span class="tag">Known quirk</span>
+    <p>The category vocabulary is free text and was not normalized: <code>aviation charts</code> coexists with the more specific <code>sectional chart</code>, <code>terminal area chart</code>, and <code>helicopter</code>. <code>park map</code> and <code>distribution map</code> each appear under two different <code>Topic</code> values. Group these yourself if you need a clean partition.</p>
+  </div>
+</section>
+
+<hr>
+
+<section id="images">
+  <h2 class="sec">Getting the images</h2>
+  <p class="dek">The images are not distributed here. Each record's <code>Map URL</code> is the source it was taken from; <code>Map</code> is the filename it was saved under. Build your image directory keyed by the <code>Map</code> filename so records resolve by name.</p>
+  <pre><code>import json
+
+pairs = set()
+with open("open_release.jsonl") as f:
+    for line in f:
+        r = json.loads(line)
+        names = r["Map"].split(", ")     if ", " in r["Map"]     else [r["Map"]]
+        urls  = r["Map URL"].split(", ") if ", " in r["Map URL"] else [r["Map URL"]]
+        pairs.update(zip(names, urls))
+
+print(len(pairs), "image/URL pairs to fetch")</code></pre>
+  <p>That prints <strong>532</strong> — a few more than the 525 image files, because of the region-parameter URLs described above.</p>
+  <p>Source hosts, by number of distinct URLs: <code>www.loc.gov</code> (278), <code>web.archive.org</code> (107), <code>tile.loc.gov</code> (94), <code>www.nps.gov</code> (13), and a long tail of university, municipal, and community sites.</p>
+
+  <h3>Four kinds of URL appear</h3>
+  <ul class="plain">
+    <li><strong><code>tile.loc.gov/image-services/iiif/…/full/full/0/default.jpg</code></strong> — a direct IIIF image request. Fetching it gives you the JPEG. These are large (tens of MB for a full sectional chart).</li>
+    <li><strong><code>www.loc.gov/item/…</code></strong> — a Library of Congress item page, not an image, and the most common single form (203 URLs). Open it and download the highest-resolution JPEG offered.</li>
+    <li><strong><code>www.loc.gov/resource/…</code></strong> — a Library of Congress viewer page, not an image (75 URLs). Open it and download the highest-resolution JPEG offered. An <code>r=x,y,w,h,rot</code> query parameter, if present, positions the viewer on the region the question concerns. This is the only URL form that carries the region parameter, and the dataset image is still the full sheet unless the filename says otherwise.</li>
+    <li><strong><code>.pdf</code> URLs, usually via <code>web.archive.org</code></strong> — FAA and NOAA chart PDFs. A <code>#page=N</code> fragment names the page the image came from; render that page to an image.</li>
+  </ul>
+</section>
+
+<section id="truncated">
+  <h3>If an FAA chart PDF will not open</h3>
+  <div class="call warn">
+    <span class="tag">Truncated Wayback captures</span>
+    <p>Wayback caps a stored response at <strong>1,048,576 bytes (1 MiB)</strong>, and these charts run from about 2 MB to 174 MB, so a capped capture holds only the first megabyte of the file. Every truncation found in this dataset came from a single crawl on <strong>2024-12-12</strong>, between roughly 01:00 and 02:50; captures of the same URLs from other dates are whole. No URL in this release points at a 2024-12-12 capture, but Wayback can redirect you to a different capture, so check any chart PDF you download.</p>
+    <p>The failure is easy to miss. A truncated PDF often still shows its first page and then fails on the rest, or reports a damage error only on scrolling — so “it opened” is not evidence the file is intact. <strong>What is evidence: the file size.</strong> If a chart PDF downloads to exactly 1,048,576 bytes, it is a truncated capture, not a damaged download, and refetching that same capture returns the same fragment.</p>
+    <p>To fix one, pick a different capture of the same URL:</p>
+    <pre><code>https://web.archive.org/web/*/https://aeronav.faa.gov/visual/10-31-2024/PDFs/*</code></pre>
+    <p style="margin-top:10px">That lists every capture Wayback holds for this chart edition. Choose one from a date other than 2024-12-12 — the 2025-02-08 crawl was whole for every chart checked — and prefer the largest available capture.</p>
+  </div>
+  <div class="call">
+    <span class="tag">One rule matters</span>
+    <p><strong>Stay on the same URL path.</strong> The path <code>/visual/10-31-2024/PDFs/</code> pins the chart edition, so any capture of that exact path is the same published chart and only the capture date differs. Do <strong>not</strong> substitute the live file at <code>aeronav.faa.gov</code>, and do not take a capture from a different edition directory. The FAA reissues charts in place under the same filename every 56 days, so a live or newer-edition copy can be a later printing than the image in this dataset — the airspace on it may genuinely differ, and an answer keyed to the dataset image can be wrong against it.</p>
+  </div>
+</section>
+
+<section id="hawaii">
+  <h3>The four Hawaiian Islands images</h3>
+  <p>Four dataset images come from one two-page document, <code>Hawaiian_Islands.pdf</code>:</p>
+  <div class="tw"><table>
+    <thead><tr><th>Image</th><th>Where it comes from</th></tr></thead>
+    <tbody>
+      <tr><td><code>Hawaiian_Islands.png</code></td><td>page 1</td></tr>
+      <tr><td><code>Honolulu_Inset_SEC.jpg</code></td><td>page 2, center of the page</td></tr>
+      <tr><td><code>Samoan_Islands_Inset_SEC.jpg</code></td><td>page 2, bottom left of the page</td></tr>
+      <tr><td><code>MarianasIslandsInsetSEC.jpg</code></td><td>page 2, bottom right of the page</td></tr>
+    </tbody>
+  </table></div>
+  <p>Each of the three insets was cropped out as its own image. The legend on page 2 was not included.</p>
+  <p>The URLs for all three insets end at <code>#page=2</code> and carry no region. That is deliberate rather than an omission: the insets are not rectangular, and the only region syntax a PDF URL offers (<code>viewrect</code>) takes a rectangle, so any region we could write would be a bounding box that pulled in chart content belonging to the neighboring insets. <code>#page=2</code> plus the position words above says exactly as much as is true. (<code>viewrect</code> is also ignored by the built-in PDF viewers in Chrome and Firefox, while <code>#page=</code> works in all of them.)</p>
+</section>
+
+<hr>
+
+<section id="using">
+  <h2 class="sec">Using the dataset</h2>
+  <h3>Load it</h3>
+  <pre><code>import json
+import pandas as pd
+
+records = [json.loads(line) for line in open("open_release.jsonl")]
+df = pd.DataFrame(records)
+
+# multi-label fields -> lists
+df["skills"]        = df["Question Skill"].str.split("; ")
+df["failure_modes"] = df["potential_failure_modes"].str.split("; ")
+df["complexity"]    = df["Expression Complexity"].astype(int)</code></pre>
+
+  <h3>Slice it</h3>
+  <pre><code># One skill
+bearing = df[df["skills"].apply(lambda s: "Bearing / Direction Reasoning" in s)]
+
+# Single-image questions only (skip the chart+legend pairs)
+single = df[~df["multi_map"]]
+
+# Hardest chained questions
+hard = df[df["Multi-Part / Chained"] & (df["complexity"] >= 7)]
+
+# Held-out split by map, so no map appears in both sides
+maps = sorted(df["Map"].unique())
+test_maps = set(maps[::5])
+train, test = df[~df["Map"].isin(test_maps)], df[df["Map"].isin(test_maps)]</code></pre>
+</section>
+
+<section id="splits">
+  <h3>Split by map, not by row</h3>
+  <div class="call">
+    <p>The median map has 26 questions, and questions about the same sheet share context heavily. Splitting randomly by row leaks the map — and its <code>Map Description</code> — across train and test. <strong>Group by <code>Map</code> (or by <code>Map Location</code>) when you build splits.</strong> The same rule governs the 25% of maps held back for testing: the holdout was taken by map, and <code>multi_map</code> pairs were kept together so no image can straddle the boundary.</p>
+  </div>
+</section>
+
+<section id="eval">
+  <h3>Evaluating</h3>
+  <p>Answers are short free text, not multiple choice: <code>"20 feet"</code>, <code>"NNW"</code>, <code>"1,641 feet"</code>, <code>"rodgers canyon"</code>. Exact string match will understate performance — capitalization, units, and phrasing vary. Normalize case and whitespace at minimum, and prefer a judged or fuzzy match for anything beyond a smoke test.</p>
+  <p><strong>Multi-part answers are not consistently delimited.</strong> Of the 1,097 <code>Multi-Part / Chained</code> records, 114 separate their parts with <code>;</code>, 867 use a comma (<code>Lovelock, 116.5</code>), and 116 use no delimiter at all (<code>Philip 108.4</code>). There is no single split character, so scoring parts independently means either matching each expected part against the whole answer string or judging the answer as a unit.</p>
+  <p><code>Question Skill</code> and <code>potential_failure_modes</code> are the diagnostic axes: report accuracy per label rather than one aggregate number, and the rare labels (Interpretation / Inference at 72 questions, State and Condition at 104) will need their error bars taken seriously.</p>
+</section>
+
+<section id="qle">
+  <h3>What the Quasi Logical Expression is for</h3>
+  <p>It is not an executable program and there is no interpreter for it. It is a semi-formal restatement that makes explicit which entities must be found and what operation combines them:</p>
+  <pre><code>Q    : What is the bearing from the center of the map to Scott Township?
+QLE  : for some x and some y, x is the center of the map, y is Scott Township on the
+       map, bearing from x to y?</code></pre>
+  <p>Use it to inspect what a question actually demands, to build chain-of-thought supervision, or to check whether a model's stated reasoning found the right intermediate entities. <code>Expression Complexity</code> scores the structural complexity of this expression and is the dataset's built-in difficulty proxy. It is very nearly the number of comma-separated phrases in the expression, but 322 records in this release score inconsistently with their own phrase count — including the example above, which ends in a question rather than a <code>return</code> clause. Treat the score as approximate when bucketing by difficulty.</p>
+</section>
+
+</main>
+
+<footer>MapQA · 11,176 question/answer pairs over 525 map images · see <code>README_public.md</code> for the plain-text version</footer>
+
+</div>
+</body>
+</html>
