@@ -1,6 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-XZSCXKWJ6P"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-XZSCXKWJ6P');
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest('a[download]');
+    if (a) gtag('event', 'file_download', { file_name: a.getAttribute('href'), link_text: a.textContent.trim() });
+  });
+</script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>MapQA Challenge</title>
