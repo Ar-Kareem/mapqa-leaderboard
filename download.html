@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MapQA · Download</title>
+<style>
+  :root { --fg:#1a1a1a; --muted:#6b6b6b; --line:#e6e6e6; --accent:#1f4e79; --accent-soft:#eef3f8; --bg:#ffffff; }
+  * { box-sizing:border-box; }
+  html { background:#ffffff; }
+  body { margin:0; font-family: Georgia, "Times New Roman", serif; color:var(--fg); line-height:1.6; border-top:5px solid var(--accent); }
+  body { position:relative; }
+  body::before { content:""; position:fixed; top:0; left:0; right:0; height:620px; z-index:0; pointer-events:none;
+    background:url("contours.svg") center top / 1600px 900px no-repeat; opacity:0.32;
+    -webkit-mask-image: linear-gradient(to bottom, #000 55%, transparent 100%), linear-gradient(to right, #000 0%, #000 22%, transparent 34%, transparent 66%, #000 78%, #000 100%);
+    -webkit-mask-composite: source-in; mask-image: linear-gradient(to bottom, #000 55%, transparent 100%), linear-gradient(to right, #000 0%, #000 22%, transparent 34%, transparent 66%, #000 78%, #000 100%); mask-composite: intersect; }
+  @media (max-width: 900px) { body::before { display:none; } }
+  main { position:relative; z-index:1; max-width:760px; margin:0 auto; padding:44px 24px 80px; }
+  h1 { font-size:2.5rem; font-weight:normal; margin:0 0 4px; letter-spacing:-0.01em; color:var(--accent); }
+  .sub { color:var(--muted); margin:0 0 36px; font-size:1.1rem; font-style:italic; }
+  h2 { font-size:1.3rem; font-weight:normal; margin:44px 0 14px; padding-bottom:6px; border-bottom:2px solid var(--accent); display:inline-block; }
+  p { margin:0 0 14px; }
+  .stats { display:flex; gap:0; flex-wrap:wrap; margin:24px 0 8px; background:var(--accent-soft); border-radius:6px; padding:18px 8px; }
+  .stats div { flex:1; min-width:120px; text-align:center; border-right:1px solid #d5e0ea; }
+  .stats div:last-child { border-right:none; }
+  .stats b { display:block; font-size:1.7rem; font-weight:normal; color:var(--accent); }
+  .stats span { color:var(--muted); font-size:0.85rem; text-transform:uppercase; letter-spacing:0.06em; }
+  table { width:100%; border-collapse:collapse; font-size:0.97rem; margin-top:8px; }
+  th, td { padding:8px 10px; border-bottom:1px solid var(--line); text-align:left; vertical-align:top; }
+  th { font-weight:normal; color:var(--muted); font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em; border-bottom:2px solid var(--line); }
+  tbody tr:nth-child(even) { background:#fafafa; }
+  tbody tr:hover { background:var(--accent-soft); }
+  td.num, th.num { text-align:right; font-variant-numeric:tabular-nums; }
+  td.rank { color:var(--muted); width:2.5em; }
+  tbody tr:nth-child(-n+4):not(.human) td.rank { color:var(--accent); font-weight:bold; }
+  .muted { color:var(--muted); }
+  tr.human td { font-style:italic; background:var(--accent-soft); border-bottom:2px solid var(--accent); }
+  .note { color:var(--muted); font-size:0.88rem; margin-top:10px; }
+  ul { padding-left:20px; margin:0 0 14px; }
+  li { margin-bottom:6px; }
+  a { color:var(--accent); }
+  header { position:sticky; top:0; z-index:2; background:rgba(255,255,255,0.92); backdrop-filter:blur(4px); border-bottom:1px solid var(--line); }
+  header .bar { max-width:760px; margin:0 auto; padding:12px 24px; display:flex; align-items:center; justify-content:space-between; }
+  header .brand { color:var(--accent); text-decoration:none; font-size:1.15rem; letter-spacing:0.02em; }
+  header nav a { margin-left:22px; text-decoration:none; color:var(--fg); font-size:0.95rem; }
+  header nav a:hover { color:var(--accent); }
+  header nav a.soon { position:relative; color:#b4b4b4; cursor:default; transition:color .2s; }
+  header nav a.soon:hover { color:#8a8a8a; }
+  header nav a.soon::after { content:attr(data-tip); position:absolute; top:calc(100% + 12px); left:50%;
+    transform:translate(-50%, -4px); white-space:nowrap; background:var(--accent); color:#fff;
+    font-size:0.72rem; letter-spacing:0.08em; text-transform:uppercase; padding:6px 12px; border-radius:999px;
+    box-shadow:0 4px 14px rgba(31,78,121,0.25); opacity:0; pointer-events:none; transition:opacity .18s ease, transform .18s ease; }
+  header nav a.soon::before { content:""; position:absolute; top:calc(100% + 7px); left:50%; transform:translate(-50%, -4px);
+    border:5px solid transparent; border-bottom-color:var(--accent); border-top:0; opacity:0; pointer-events:none;
+    transition:opacity .18s ease, transform .18s ease; }
+  header nav a.soon:hover::after, header nav a.soon:hover::before,
+  header nav a.soon:focus-visible::after, header nav a.soon:focus-visible::before { opacity:1; transform:translate(-50%, 0); }
+  header nav a.here { color:var(--accent); border-bottom:2px solid var(--accent); padding-bottom:2px; }
+  .files { list-style:none; padding:0; margin:0 0 14px; }
+  .files li { padding:14px 0; border-bottom:1px solid var(--line); margin:0; }
+  .files a.dl { font-size:1.1rem; }
+  .files .meta { color:var(--muted); font-size:0.88rem; display:block; }
+  .disc { font-size:0.8rem; line-height:1.5; margin-top:10px; }
+  footer { margin-top:56px; color:var(--muted); font-size:0.85rem; border-top:1px solid var(--line); padding-top:14px; }
+</style>
+</head>
+<body>
+<header><div class="bar">
+  <a class="brand" href="index.html">MapQA</a>
+  <nav>
+    <a href="index.html">Leaderboard</a>
+    <a href="download.html" class="here">Download</a>
+    <a href="README_public.html">README</a>
+    <a class="soon" href="#" data-tip="Coming soon" aria-label="Paper, coming soon" onclick="return false">Paper</a>
+  </nav>
+</div></header>
+<main>
+  <h1>MapQA</h1>
+  <p class="sub">Download the dataset</p>
+
+  <p>Both files are plain JSON. The full documentation, including many other details, is in the README.</p>
+
+  <ul class="files">
+    <li><a class="dl" href="open_release.jsonl" download>Full public dataset</a>
+      <span class="meta">open_release.jsonl &middot; 11,176 questions over 525 maps &middot; 12.1 MB</span></li>
+    <li><a class="dl" href="eval_500.jsonl" download>Leaderboard evaluation set</a>
+      <span class="meta">eval_500.jsonl &middot; 499 questions over 310 maps &middot; 547 KB</span></li>
+    <li><a class="dl" href="README_public.html">README</a>
+      <span class="meta">Schema, taxonomies, image sources, and usage notes &middot; also as <a href="README_public.md">Markdown</a></span></li>
+  </ul>
+
+  <h2>Notes</h2>
+  <p>The evaluation set is the fixed sample of questions on which every leaderboard entry is scored and is a subset of the full public dataset.</p>
+  <p>A private test set of roughly a quarter of the maps is held back and is not part of either file.</p>
+  <p>Answers are short free text, not multiple choice. An LLM judge should be used.</p>
+
+  <footer>MapQA &middot; Massachusetts Institute of Technology
+    <p class="disc">Research was sponsored by the Department of the Air Force Artificial Intelligence Accelerator and was accomplished under Cooperative Agreement Number FA8750-19-2-1000. The views and conclusions contained in this document are those of the authors and should not be interpreted as representing the official policies, either expressed or implied, of the Department of the Air Force or the U.S. Government. The U.S. Government is authorized to reproduce and distribute reprints for Government purposes notwithstanding any copyright notation herein.</p>
+  </footer>
+</main>
+</body>
+</html>

@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MapQA Challenge</title>
+<style>
+  :root { --fg:#1a1a1a; --muted:#6b6b6b; --line:#e6e6e6; --accent:#1f4e79; --accent-soft:#eef3f8; --bg:#ffffff; }
+  * { box-sizing:border-box; }
+  html { background:#ffffff; }
+  body { margin:0; font-family: Georgia, "Times New Roman", serif; color:var(--fg); line-height:1.6; border-top:5px solid var(--accent); }
+  body { position:relative; }
+  body::before { content:""; position:fixed; top:0; left:0; right:0; height:620px; z-index:0; pointer-events:none;
+    background:url("contours.svg") center top / 1600px 900px no-repeat; opacity:0.32;
+    -webkit-mask-image: linear-gradient(to bottom, #000 55%, transparent 100%), linear-gradient(to right, #000 0%, #000 22%, transparent 34%, transparent 66%, #000 78%, #000 100%);
+    -webkit-mask-composite: source-in; mask-image: linear-gradient(to bottom, #000 55%, transparent 100%), linear-gradient(to right, #000 0%, #000 22%, transparent 34%, transparent 66%, #000 78%, #000 100%); mask-composite: intersect; }
+  @media (max-width: 900px) { body::before { display:none; } }
+  main { position:relative; z-index:1; max-width:760px; margin:0 auto; padding:44px 24px 80px; }
+  h1 { font-size:2.5rem; font-weight:normal; margin:0 0 4px; letter-spacing:-0.01em; color:var(--accent); }
+  .sub { color:var(--muted); margin:0 0 36px; font-size:1.1rem; font-style:italic; }
+  h2 { font-size:1.3rem; font-weight:normal; margin:44px 0 14px; padding-bottom:6px; border-bottom:2px solid var(--accent); display:inline-block; }
+  p { margin:0 0 14px; }
+  .lead { margin:0 0 8px; }
+  .lead dt { font-size:1.15rem; color:var(--accent); margin:18px 0 4px; }
+  .lead dd { margin:0; font-size:1.02rem; }
+  .stats { display:flex; gap:0; flex-wrap:wrap; margin:24px 0 8px; background:var(--accent-soft); border-radius:6px; padding:18px 8px; }
+  .stats div { flex:1; min-width:120px; text-align:center; border-right:1px solid #d5e0ea; }
+  .stats div:last-child { border-right:none; }
+  .stats b { display:block; font-size:1.7rem; font-weight:normal; color:var(--accent); }
+  .stats span { color:var(--muted); font-size:0.85rem; text-transform:uppercase; letter-spacing:0.06em; }
+  table { width:100%; border-collapse:collapse; font-size:0.97rem; margin-top:8px; }
+  th, td { padding:8px 10px; border-bottom:1px solid var(--line); text-align:left; vertical-align:top; }
+  th { font-weight:normal; color:var(--muted); font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em; border-bottom:2px solid var(--line); }
+  tbody tr:nth-child(even) { background:#fafafa; }
+  tbody tr:hover { background:var(--accent-soft); }
+  td.num, th.num { text-align:right; font-variant-numeric:tabular-nums; }
+  td.rank { color:var(--muted); width:2.5em; }
+  tbody tr:nth-child(-n+4):not(.human) td.rank { color:var(--accent); font-weight:bold; }
+  .muted { color:var(--muted); }
+  tr.human td { font-style:italic; background:var(--accent-soft); border-bottom:2px solid var(--accent); }
+  .examples { display:grid; grid-template-columns:1fr 1fr; gap:22px; margin:18px 0 8px; }
+  @media (max-width:640px) { .examples { grid-template-columns:1fr; } }
+  .ex { margin:0; border:1px solid var(--line); border-radius:6px; overflow:hidden; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,0.05); }
+  .ex img { display:block; width:100%; aspect-ratio:4/3; object-fit:cover; border-bottom:1px solid var(--line); }
+  .ex figcaption { padding:12px 14px 14px; }
+  .ex .tag { display:inline-block; font-size:0.72rem; text-transform:uppercase; letter-spacing:0.07em; color:var(--accent); background:var(--accent-soft); padding:2px 8px; border-radius:3px; }
+  .ex .loc { display:block; color:var(--muted); font-size:0.85rem; margin:6px 0 8px; }
+  .ex .q { margin:0 0 8px; font-size:0.97rem; line-height:1.45; }
+  .ex .a { margin:0; font-size:0.95rem; }
+  .ex .a span { font-size:0.72rem; text-transform:uppercase; letter-spacing:0.07em; color:var(--muted); margin-right:6px; }
+  .note { color:var(--muted); font-size:0.88rem; margin-top:10px; }
+  ul { padding-left:20px; margin:0 0 14px; }
+  li { margin-bottom:6px; }
+  a { color:var(--accent); }
+  header { position:sticky; top:0; z-index:2; background:rgba(255,255,255,0.92); backdrop-filter:blur(4px); border-bottom:1px solid var(--line); }
+  header .bar { max-width:760px; margin:0 auto; padding:12px 24px; display:flex; align-items:center; justify-content:space-between; }
+  header .brand { color:var(--accent); text-decoration:none; font-size:1.15rem; letter-spacing:0.02em; }
+  header nav a { margin-left:22px; text-decoration:none; color:var(--fg); font-size:0.95rem; }
+  header nav a:hover { color:var(--accent); }
+  header nav a.soon { position:relative; color:#b4b4b4; cursor:default; transition:color .2s; }
+  header nav a.soon:hover { color:#8a8a8a; }
+  header nav a.soon::after { content:attr(data-tip); position:absolute; top:calc(100% + 12px); left:50%;
+    transform:translate(-50%, -4px); white-space:nowrap; background:var(--accent); color:#fff;
+    font-size:0.72rem; letter-spacing:0.08em; text-transform:uppercase; padding:6px 12px; border-radius:999px;
+    box-shadow:0 4px 14px rgba(31,78,121,0.25); opacity:0; pointer-events:none; transition:opacity .18s ease, transform .18s ease; }
+  header nav a.soon::before { content:""; position:absolute; top:calc(100% + 7px); left:50%; transform:translate(-50%, -4px);
+    border:5px solid transparent; border-bottom-color:var(--accent); border-top:0; opacity:0; pointer-events:none;
+    transition:opacity .18s ease, transform .18s ease; }
+  header nav a.soon:hover::after, header nav a.soon:hover::before,
+  header nav a.soon:focus-visible::after, header nav a.soon:focus-visible::before { opacity:1; transform:translate(-50%, 0); }
+  header nav a.here { color:var(--accent); border-bottom:2px solid var(--accent); padding-bottom:2px; }
+  .files { list-style:none; padding:0; margin:0 0 14px; }
+  .files li { padding:14px 0; border-bottom:1px solid var(--line); margin:0; }
+  .files a.dl { font-size:1.1rem; }
+  .files .meta { color:var(--muted); font-size:0.88rem; display:block; }
+  .disc { font-size:0.8rem; line-height:1.5; margin-top:10px; }
+  footer { margin-top:56px; color:var(--muted); font-size:0.85rem; border-top:1px solid var(--line); padding-top:14px; }
+</style>
+</head>
+<body>
+<header><div class="bar">
+  <a class="brand" href="index.html">MapQA</a>
+  <nav>
+    <a href="index.html" class="here">Leaderboard</a>
+    <a href="download.html">Download</a>
+    <a href="README_public.html">README</a>
+    <a class="soon" href="#" data-tip="Coming soon" aria-label="Paper, coming soon" onclick="return false">Paper</a>
+  </nav>
+</div></header>
+<main>
+  <h1>MapQA</h1>
+  <p class="sub">A public challenge in visual question answering over real-world maps</p>
+
+  <dl class="lead">
+    <dt>What is MapQA?</dt>
+    <dd>A visual question-answering benchmark over real maps and charts: 11,176 questions grounded in 525 published maps, from FAA aviation charts to nautical, topographic, urban, and historical military maps.</dd>
+    <dt>Why?</dt>
+    <dd>Maps pack symbols, legends, labels, bearings, and spatial relationships into a single image that a trained reader resolves effortlessly. MapQA tests whether vision-language models can do the same.</dd>
+  </dl>
+
+  <div class="stats">
+    <div><b>11,176</b><span>questions</span></div>
+    <div><b>525</b><span>maps</span></div>
+    <div><b>4</b><span>domains</span></div>
+    <div><b>17</b><span>question skills</span></div>
+  </div>
+
+  <h2>Examples</h2>
+  <div class="examples">
+    <figure class="ex">
+      <img src="img/aviation.jpg" alt="sectional chart of Charlotte, North Carolina">
+      <figcaption>
+        <span class="tag">Aviation &middot; sectional chart</span>
+        <span class="loc">Charlotte, North Carolina</span>
+        <p class="q">What VOR on this map is at a bearing of 178° from Fayetteville?</p>
+        <p class="a"><span>Answer</span> Grand Strand</p>
+      </figcaption>
+    </figure>
+    <figure class="ex">
+      <img src="img/natural_world.jpg" alt="nautical chart of Hawaiian Islands">
+      <figcaption>
+        <span class="tag">Natural World &middot; nautical chart</span>
+        <span class="loc">Hawaiian Islands</span>
+        <p class="q">What does the box drawn in magenta east of Hilo Bay represent?</p>
+        <p class="a"><span>Answer</span> explosives dumping area</p>
+      </figcaption>
+    </figure>
+    <figure class="ex">
+      <img src="img/urban.jpg" alt="city map of Buffalo, New York">
+      <figcaption>
+        <span class="tag">Urban &middot; city map</span>
+        <span class="loc">Buffalo, New York</span>
+        <p class="q">Which exhibit is positioned just south of the Jerusalem Exhibit?</p>
+        <p class="a"><span>Answer</span> Indian Congress 42 Tribes</p>
+      </figcaption>
+    </figure>
+    <figure class="ex">
+      <img src="img/military.jpg" alt="strategic of Northern France">
+      <figcaption>
+        <span class="tag">Military &middot; strategic</span>
+        <span class="loc">Northern France</span>
+        <p class="q">Which river flows through St-Lo as labeled on the main map?</p>
+        <p class="a"><span>Answer</span> the Vire</p>
+      </figcaption>
+    </figure>
+  </div>
+
+  <h2>Leaderboard</h2>
+  <p>Models are scored on a fixed 500-question evaluation split, available on the <a href="download.html">download page</a>. Answers are free-form text and are graded using an LLM judge against the human-written reference answer. The LLM judge does not see the map nor the question, only the reference and candidate answers. Human performance is measured on the same task.</p>
+
+  <table>
+    <thead><tr><th>#</th><th>Model</th><th class="num">Accuracy (%)</th><th class="num">Questions</th></tr></thead>
+    <tbody>
+      <tr class="human"><td class="rank">&ndash;</td><td>Humans</td><td class="num">91.4</td><td class="num muted">&ndash;</td></tr>
+<tr><td class="rank">1</td><td>Claude Fable 5.1</td><td class="num">44.2</td><td class="num muted">500</td></tr>
+<tr><td class="rank">2</td><td>GPT-o4-mini</td><td class="num">40.8</td><td class="num muted">500</td></tr>
+<tr><td class="rank">3</td><td>Gemini 3.1 Flash-Lite (thinking)</td><td class="num">39.8</td><td class="num muted">500</td></tr>
+<tr><td class="rank">4</td><td>Gemini 3.5 Flash-Lite (thinking)</td><td class="num">39.6</td><td class="num muted">500</td></tr>
+<tr><td class="rank">5</td><td>GPT-5 Mini</td><td class="num">39.4</td><td class="num muted">500</td></tr>
+<tr><td class="rank">6</td><td>Claude Opus 5</td><td class="num">38.0</td><td class="num muted">500</td></tr>
+<tr><td class="rank">7</td><td>GPT-5</td><td class="num">38.0</td><td class="num muted">500</td></tr>
+<tr><td class="rank">8</td><td>Qwen3.5 27B</td><td class="num">34.0</td><td class="num muted">500</td></tr>
+<tr><td class="rank">9</td><td>Qwen3.8 27B</td><td class="num">31.8</td><td class="num muted">500</td></tr>
+<tr><td class="rank">10</td><td>Qwen3-VL 32B</td><td class="num">29.8</td><td class="num muted">500</td></tr>
+<tr><td class="rank">11</td><td>Perceptron Mk1.5 (thinking)</td><td class="num">28.4</td><td class="num muted">500</td></tr>
+<tr><td class="rank">12</td><td>Claude Opus 4.8</td><td class="num">27.4</td><td class="num muted">500</td></tr>
+<tr><td class="rank">13</td><td>GPT-4.1</td><td class="num">25.2</td><td class="num muted">500</td></tr>
+<tr><td class="rank">14</td><td>GPT-5 Nano</td><td class="num">25.0</td><td class="num muted">500</td></tr>
+<tr><td class="rank">15</td><td>Nemotron 3 Nano Omni 30B</td><td class="num">24.4</td><td class="num muted">500</td></tr>
+<tr><td class="rank">16</td><td>Inkling-Small 276B (thinking)</td><td class="num">24.2</td><td class="num muted">500</td></tr>
+<tr><td class="rank">17</td><td>Qwen3.6 35B-A3B</td><td class="num">24.2</td><td class="num muted">500</td></tr>
+<tr><td class="rank">18</td><td>Gemma 4 31B</td><td class="num">23.8</td><td class="num muted">500</td></tr>
+<tr><td class="rank">19</td><td>Gemma 4 31B (thinking)</td><td class="num">23.4</td><td class="num muted">500</td></tr>
+<tr><td class="rank">20</td><td>GPT-4o</td><td class="num">22.2</td><td class="num muted">500</td></tr>
+<tr><td class="rank">21</td><td>Claude Sonnet 5</td><td class="num">21.8</td><td class="num muted">500</td></tr>
+<tr><td class="rank">22</td><td>Ministral 3 14B</td><td class="num">20.4</td><td class="num muted">500</td></tr>
+<tr><td class="rank">23</td><td>Gemma 4 26B-A4B</td><td class="num">19.2</td><td class="num muted">500</td></tr>
+<tr><td class="rank">24</td><td>Gemma 3 27B</td><td class="num">18.2</td><td class="num muted">500</td></tr>
+<tr><td class="rank">25</td><td>Mistral Small 3.2 24B</td><td class="num">17.0</td><td class="num muted">500</td></tr>
+<tr><td class="rank">26</td><td>Mistral Small 4 119B</td><td class="num">16.2</td><td class="num muted">500</td></tr>
+<tr><td class="rank">27</td><td>Claude Opus 4 <sup>*</sup></td><td class="num">15.5</td><td class="num muted">322</td></tr>
+<tr><td class="rank">28</td><td>Claude Sonnet 4 <sup>*</sup></td><td class="num">14.0</td><td class="num muted">322</td></tr>
+<tr><td class="rank">29</td><td>Claude 3.5 Haiku <sup>*</sup></td><td class="num">13.3</td><td class="num muted">135</td></tr>
+<tr><td class="rank">30</td><td>Claude Haiku 4.5</td><td class="num">12.6</td><td class="num muted">500</td></tr>
+<tr><td class="rank">31</td><td>Qwen2.5-VL 3B</td><td class="num">12.2</td><td class="num muted">500</td></tr>
+<tr><td class="rank">32</td><td>Llama-3 11B</td><td class="num">9.2</td><td class="num muted">500</td></tr>
+<tr><td class="rank">33</td><td>LLaVA-Next 72B</td><td class="num">6.4</td><td class="num muted">500</td></tr>
+<tr><td class="rank">34</td><td>Pixtral 12B</td><td class="num">6.0</td><td class="num muted">500</td></tr>
+<tr><td class="rank">35</td><td>LLaVA-Next 34B</td><td class="num">5.6</td><td class="num muted">500</td></tr>
+<tr><td class="rank">36</td><td>LLaVA-Next 7B (Mistral)</td><td class="num">4.8</td><td class="num muted">500</td></tr>
+<tr><td class="rank">37</td><td>LLaVA-Next 7B (Vicuna)</td><td class="num">4.6</td><td class="num muted">500</td></tr>
+<tr><td class="rank">38</td><td>LLaVA-Next 13B (Vicuna)</td><td class="num">3.0</td><td class="num muted">500</td></tr>
+<tr><td class="rank">39</td><td>Reka Edge 7B</td><td class="num">1.6</td><td class="num muted">500</td></tr>
+<tr><td class="rank">40</td><td>Phi-3.5 Vision</td><td class="num">1.6</td><td class="num muted">500</td></tr>
+    </tbody>
+  </table>
+  <p class="note"><sup>*</sup> Evaluated on a partial split; score is provisional.</p>
+
+  <h2>About the dataset</h2>
+  <p>Real-world maps compress an enormous amount of information into a single image: symbols, legends, labels, bearings, and spatial relationships that a trained reader resolves effortlessly. MapQA asks whether today's vision-language models (VLMs) can do the same. Each question is grounded in a published map and requires reasoning over the map.</p>
+  <p>The questions are drawn from four domains: aviation charts, natural-world maps such as topographic and soil maps, urban maps such as city, zoning, and transportation maps, and historical military maps. Every question was written or verified by human annotators, and a filter removes questions that can be answered without looking at the map. The maps are mostly real documents: FAA charts, nautical charts, topographic sheets, and more. Many images come from the Library of Congress or the National Park Service. 25% of the maps in the full corpus have been held back as a private evaluation set and are not part of this release. Images are not included; each question carries the source URL for its image instead.</p>
+  <p>Each question is tagged with one or more of seventeen skills. The most common are spatial relations, feature identification, attribute and value lookup, position within the map frame, extremum and comparison selection, legend and symbology interpretation, nearest or farthest selection, label reading, bearing and direction reasoning, route tracing, metadata lookup, and counting. Others cover grid and coordinate referencing, measurement, presence or absence detection, description, and inference. A subset of questions spans two images, typically a chart and its legend.</p>
+
+  <h2>Participate</h2>
+  <p>The challenge is open to anyone. To have a model listed:</p>
+  <ul>
+    <li>Run your model on the evaluation split and produce one free-form answer per question.</li>
+    <li>Send us your predictions along with the model name, size, and whether it used extended reasoning.</li>
+    <li>We grade submissions with the same protocol used for every entry above and add the result to the table.</li>
+  </ul>
+  <p>Contact: <a href="mailto:ORGANIZER_EMAIL">ORGANIZER_EMAIL</a></p>
+
+  <footer>MapQA &middot; Massachusetts Institute of Technology
+    <p class="disc">Research was sponsored by the Department of the Air Force Artificial Intelligence Accelerator and was accomplished under Cooperative Agreement Number FA8750-19-2-1000. The views and conclusions contained in this document are those of the authors and should not be interpreted as representing the official policies, either expressed or implied, of the Department of the Air Force or the U.S. Government. The U.S. Government is authorized to reproduce and distribute reprints for Government purposes notwithstanding any copyright notation herein.</p>
+  </footer>
+</main>
+</body>
+</html>
